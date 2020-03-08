@@ -1,4 +1,5 @@
 import socket, optparse
+import time
 
 parser = optparse.OptionParser()
 parser.add_option('-i', dest='ip', default='10.0.0.2')
@@ -23,15 +24,13 @@ ip_header += b'\x40\x06\xbb\x00'  # TTL, Protocol | Header Checksum
 ip_header += b'\x0a\x00\x00\x01'  # Source Address
 ip_header += b'\x0a\x00\x00\x02'  # Destination Address
 
-tcp_header  = b'\x30\x39\x30\x3a' # Source port | Destination port
-tcp_header += b'\x00\x01\x00\x00' # Sequence Number
+tcp_header  = b'\x30\x39\x30\x3c' # Source port | Destination port
+tcp_header += b'\x00\x00\x00\x00' # Sequence Number
 tcp_header += b'\x00\x00\x00\x00' # Acknowledgement Number
-tcp_header += b'\x50\x02\x71\x10' # Data offset, Reserved, NS | ..., SYN, FIN | Window Size
-tcp_header += b'\xca\x5b\x00\x00' # Checksum | Urgent pointer
+tcp_header += b'\x50\x02\x71\x10' # Data offset, Reserved, NS | CWR, ECE, URG, ACK, PSH, RST, SYN, FIN | Window Size
+tcp_header += b'\xca\x5a\x00\x00' # Checksum | Urgent pointer
 
 packet_to_send = ip_header + tcp_header
-s.sendto(packet_to_send, (options.ip, options.port))
-
 
 ip_header2  = b'\x45\x00\x00\x28'  # Version, IHL | DSCP, ECN | Type of Service | Total Length
 ip_header2 += b'\xab\xcd\x00\x00'  # Identification | Flags, Fragment Offset
@@ -39,11 +38,17 @@ ip_header2 += b'\x40\x06\xbb\x00'  # TTL, Protocol | Header Checksum
 ip_header2 += b'\x0a\x00\x00\x01'  # Source Address
 ip_header2 += b'\x0a\x00\x00\x02'  # Destination Address
 
-tcp_header2  = b'\x30\x39\x30\x3a' # Source port | Destination port
-tcp_header2 += b'\x00\x00\x00\x00' # Sequence Number
+tcp_header2  = b'\x30\x39\x30\x3c' # Source port | Destination port
+tcp_header2 += b'\x00\x00\x00\x01' # Sequence Number
 tcp_header2 += b'\x00\x00\x00\x01' # Acknowledgement Number
-tcp_header2 += b'\x50\x02\x70\x10' # Data offset, Reserved, NS | ..., SYN, FIN | Window Size
-tcp_header2 += b'\xca\x5b\x00\x00' # Checksum | Urgent pointer
+tcp_header2 += b'\x50\x10\x70\x10' # Data offset, Reserved, NS | CWR, ECE, URG, ACK, PSH, RST, SYN, FIN | Window Size
+tcp_header2 += b'\xcb\x4a\x00\x00' # Checksum | Urgent pointer
 
 packet_to_send2 = ip_header2 + tcp_header2
+
+#while True:
+s.sendto(packet_to_send, (options.ip, options.port))
+data = s.recv(1024)
+print(data)
 s.sendto(packet_to_send2, (options.ip, options.port))
+time.sleep(1000)
